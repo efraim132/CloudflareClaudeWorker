@@ -1,0 +1,13 @@
+# The name that shows up in your Cloudflare dashboard
+name = "statuspage-discord"
+
+# "module" means we're using the ES module format (export default { fetch() {} })
+# as opposed to the older "service-worker" format
+main = "src/index.ts"
+
+# Workers run on V8 (Chrome's JS engine), not Node.
+# This flag gives you access to some Node-compatible APIs if needed.
+compatibility_date = "2024-01-01"
+
+# Optional: pin to a specific compatibility flag set
+# compatibility_flags = ["nodejs_compat"]

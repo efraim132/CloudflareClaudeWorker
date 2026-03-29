@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "target": "ES2021",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": ["ES2021"],
+    "types": ["@cloudflare/workers-types"],
     "strict": true,
-    "skipLibCheck": true,
-    "outDir": "dist"
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
