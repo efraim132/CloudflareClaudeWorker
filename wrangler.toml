@@ -11,3 +11,8 @@ compatibility_date = "2024-01-01"
 
 # Optional: pin to a specific compatibility flag set
 # compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "claudeStatusDB"
+database_name = "claudeStatusDB"
+database_id = "9b95d7cd-5122-4272-843a-2c631dda425d"
