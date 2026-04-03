@@ -15,8 +15,7 @@
 // This is the "Env" object that Cloudflare injects into every request.
 // Any secrets or bindings you set up in wrangler.toml or via CLI show up here.
 interface Env {
-  DISCORD_WEBHOOK_URL: string;
-  claudestatusdb: D1Database;
+  claudeStatusDB: D1Database;
 }
 
 // Statuspage sends two types of payloads: incident and component.
@@ -340,7 +339,7 @@ export default {
         });
       }
       //Figure out what product this is
-      const serviceID = await identifyService(data, env.claudestatusdb);
+      const serviceID = await identifyService(data, env.claudeStatusDB);
 
       // Figure out what type of event this is and build the right embed
       let embed: DiscordEmbed;
@@ -361,26 +360,35 @@ export default {
         };
       }
 
-      //TODO check the database to see who to properly send it to
       const urlsToNotify = await identifySubscriptions(
         serviceID,
-        env.claudestatusdb,
+        env.claudeStatusDB,
       );
 
-      // Forward to Discord
-      const discordResponse = await sendToDiscord(
-        env.DISCORD_WEBHOOK_URL,
-        embed,
-      );
-      const discordBody = await discordResponse.text();
+      if (urlsToNotify.length === 0) {
+        return new Response(
+          JSON.stringify({ discord_status: "no_subscriptions" }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
 
-      // Log it (shows up in `wrangler tail` for debugging)
-      console.log(
-        `Discord responded: ${discordResponse.status} - ${discordBody}`,
+      // Fan out to all subscribed Discord webhooks in parallel
+      const results = await Promise.allSettled(
+        urlsToNotify.map((url) => sendToDiscord(url, embed)),
       );
+
+      let successCount = 0;
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          console.log(`Discord responded: ${result.value.status}`);
+          if (result.value.ok) successCount++;
+        } else {
+          console.error(`Failed to send to Discord webhook: ${result.reason}`);
+        }
+      }
 
       return new Response(
-        JSON.stringify({ discord_status: discordResponse.status }),
+        JSON.stringify({ sent: successCount, total: urlsToNotify.length }),
         { headers: { "Content-Type": "application/json" } },
       );
     }
